@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard - MASA</title>
+  <style>
+    /* CSS EMBUTIDO - IDÊNTICO AO DA PÁGINA PÚBLICA PARA MANTER O PADRÃO */
+    :root{
+      --masa-navy:#1e3a5f;
+      --masa-blue:#2d5a8a;
+      --masa-sky:#5eb9f0;
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --shadow:0 6px 24px rgba(0,0,0,.08);
+      --radius:14px;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:var(--bg);line-height:1.5;display:flex;height:100vh;overflow:hidden;}
+
+    /* BOTOES E INPUTS */
+    .btn{
+      border:0;border-radius:10px;padding:10px 14px;font-weight:900;
+      cursor:pointer;transition:.15s ease;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    }
+    .btn-primary{background:var(--masa-sky);color:#fff;}
+    .btn-primary:hover{filter:brightness(.95);}
+    .btn-secondary{background:var(--masa-navy);color:#fff;}
+    .btn-secondary:hover{filter:brightness(.95);}
+    .btn-danger{background:#ef4444;color:#fff;}
+    .btn-danger:hover{filter:brightness(.95);}
+    .btn-light{background:#eef2f7;color:var(--masa-navy);}
+    .btn-light:hover{filter:brightness(.97);}
+
+    .field{margin-bottom:14px;}
+    label{display:block;font-weight:900;color:var(--masa-navy);font-size:13px;margin-bottom:6px;}
+    input,select,textarea{
+      width:100%;border:1px solid #d7dde5;border-radius:10px;padding:10px 12px;
+      font-size:14px;outline:none;font-family:inherit;background:#fff;
+    }
+    textarea{resize:vertical;min-height:120px;}
+    input:focus,select:focus,textarea:focus{border-color:rgba(94,185,240,.9);box-shadow:0 0 0 4px rgba(94,185,240,.18);}
+
+    .badge{
+      display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;
+      background:rgba(94,185,240,.14);color:var(--masa-navy);font-weight:900;font-size:12px;
+      border:1px solid rgba(94,185,240,.25);
+    }
+    .badge.green { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+    .badge.yellow { background: #fef9c3; color: #854d0e; border-color: #fef08a; }
+
+    /* LAYOUT: SIDEBAR E MAIN */
+    .sidebar{
+      width:260px;background:var(--masa-navy);color:#fff;padding:24px 20px;
+      display:flex;flex-direction:column;border-right:1px solid rgba(0,0,0,0.1);
+      box-shadow: 4px 0 15px rgba(0,0,0,0.05);z-index:10;
+    }
+    .sidebar .logo{font-size:26px;font-weight:900;letter-spacing:.5px;line-height:1;margin-bottom:40px;}
+    .sidebar .logo span{display:block;font-size:11px;font-weight:600;color:var(--masa-sky);margin-top:4px;}
+    
+    .sidebar a{
+      color:#e2e8f0;text-decoration:none;padding:12px 14px;margin-bottom:8px;
+      border-radius:10px;display:block;font-weight:800;font-size:14px;transition:0.2s;
+    }
+    .sidebar a:hover, .sidebar a.active{background:rgba(255,255,255,0.1);color:#fff;}
+    .sidebar a.logout{color:#fca5a5;margin-top:auto;}
+    .sidebar a.logout:hover{background:rgba(239,68,68,0.2);}
+
+    .main{
+      flex:1;padding:30px;overflow-y:auto;background:var(--bg);
+    }
+
+    /* CARDS E TABELAS */
+    .card{
+      background:#fff;border:1px solid rgba(17,24,39,.08);border-radius:var(--radius);
+      padding:24px;box-shadow:var(--shadow);margin-bottom:24px;
+    }
+    .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 20px; }
+    .card-header h2 { font-size: 20px; color: var(--masa-navy); font-weight: 900; }
+
+    table{width:100%;border-collapse:collapse;margin-top:10px;}
+    th,td{padding:14px 16px;text-align:left;border-bottom:1px solid var(--border);font-size:14px; vertical-align:middle;}
+    th{background:#f8fafc;font-weight:900;color:var(--masa-navy);text-transform:uppercase;font-size:12px;letter-spacing:0.5px;}
+    tr:hover td { background: #fbfcfe; }
+    td strong { color: var(--masa-navy); }
+    
+    /* Thumb da imagem na tabela */
+    .thumb-img { width: 50px; height: 36px; border-radius: 6px; object-fit: cover; background: #e5e7eb; display: block;}
+
+    /* MODAL */
+    .modal-overlay{
+      display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(17,24,39,0.6);z-index:9999;backdrop-filter:blur(3px);
+      align-items:center;justify-content:center;
+    }
+    .modal-content{
+      background:#fff;border-radius:var(--radius);width:100%;max-width:600px;
+      max-height:90vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,0.2);
+    }
+    .modal-header{
+      padding:20px 24px;border-bottom:1px solid var(--border);
+      display:flex;justify-content:space-between;align-items:center;
+    }
+    .modal-header h3{color:var(--masa-navy);font-size:18px;font-weight:900;}
+    .close-btn{background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted);}
+    .modal-body{padding:24px;}
+    
+    .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    .data-box { background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border); }
+    .data-box span { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 800; margin-bottom: 4px; }
+    .data-box div { font-size: 14px; font-weight: 600; color: var(--text); }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA LATERAL (SIDEBAR) -->
+  <div class="sidebar">
+    <div class="logo">MASA <span>ADMIN PORTAL</span></div>
+    
+    <a href="#" id="menu-news" class="active" onclick="switchSection('news')">📰 Gerenciar Notícias</a>
+    <a href="#" id="menu-reports" onclick="switchSection('reports')">🛡️ Canal de Denúncias</a>
+    
+    <div style="margin-top:20px; padding:15px; background:rgba(0,0,0,0.2); border-radius:10px;">
+      <p style="font-size:12px; color:#94a3b8; font-weight:600;">Logado como:</p>
+      <p id="admin-name" style="font-size:14px; font-weight:900; margin-top:2px;">Administrador</p>
+    </div>
+
+    <a href="#" class="logout" onclick="logout()">Sair do Sistema</a>
+  </div>
+
+  <!-- ÁREA PRINCIPAL -->
+  <div class="main">
+    
+    <!-- SEÇÃO: NOTÍCIAS -->
+    <div id="sec-news" class="card">
+      <div class="card-header">
+        <h2>Listagem de Notícias</h2>
+        <button class="btn btn-primary" onclick="openNewsModal()">+ Criar Nova Notícia</button>
+      </div>
+      <table id="tableNews">
+        <thead>
+          <tr>
+            <th style="width: 60px;">Capa</th>
+            <th>Data Pub.</th>
+            <th>Título</th>
+            <th>Categoria</th>
+            <th style="text-align:right;">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Injetado via JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SEÇÃO: DENÚNCIAS -->
+    <div id="sec-reports" class="card" style="display:none;">
+      <div class="card-header">
+        <div>
+          <h2>Relatórios e Denúncias</h2>
+          <p style="font-size:13px; color:var(--muted); margin-top:4px;">Exibindo registros dos últimos 7 dias.</p>
+        </div>
+      </div>
+      <table id="tableReports">
+        <thead>
+          <tr>
+            <th>Protocolo</th>
+            <th>Data</th>
+            <th>Tipo</th>
+            <th>Assunto</th>
+            <th>Status</th>
+            <th style="text-align:right;">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Injetado via JS -->
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ================= MODAIS ================= -->
+
+  <!-- Modal Nova/Editar Notícia -->
+  <div class="modal-overlay" id="modalNews">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="newsModalTitle">Criar Nova Notícia</h3>
+        <button class="close-btn" onclick="closeModals()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="formNews">
+          <input type="hidden" id="n_id">
+          
+          <div class="field">
+            <label>Título da Notícia</label>
+            <input type="text" id="n_title" required placeholder="Ex: MASA recebe certificação ISO">
+          </div>
+          
+          <div class="field">
+            <label>Categoria</label>
+            <select id="n_cat" required>
+              <option value="Institucional">Institucional</option>
+              <option value="Sustentabilidade">Sustentabilidade</option>
+              <option value="RH">RH</option>
+            </select>
+          </div>
+          
+          <div class="field">
+            <label>Resumo (Exibido no Card)</label>
+            <input type="text" id="n_excerpt" maxlength="150" placeholder="Breve descrição...">
+          </div>
+          
+          <div class="field">
+            <label>Conteúdo Completo (Texto da matéria)</label>
+            <textarea id="n_content" required placeholder="Escreva a notícia detalhada aqui..."></textarea>
+          </div>
+          
+          <div class="field">
+            <label>Imagem de Capa (Jpg, Png)</label>
+            <input type="file" id="n_image" accept="image/*">
+            <p style="font-size:11px; color:var(--muted); margin-top:4px;">Deixe em branco para manter a imagem atual ao editar.</p>
+          </div>
+          
+          <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:24px; border-top:1px solid var(--border); padding-top:20px;">
+            <button class="btn btn-light" type="button" onclick="closeModals()">Cancelar</button>
+            <button class="btn btn-primary" type="submit">Salvar Notícia</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Detalhes da Denúncia -->
+  <div class="modal-overlay" id="modalReport">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Detalhes do Protocolo: <span id="r_protocol_title" style="color:var(--masa-sky)"></span></h3>
+        <button class="close-btn" onclick="closeModals()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="data-grid">
+          <div class="data-box"><span>Data/Hora de Envio</span><div id="r_date"></div></div>
+          <div class="data-box"><span>Tipo e Categoria</span><div id="r_type"></div></div>
+          <div class="data-box"><span>Relação do Denunciante</span><div id="r_relation"></div></div>
+          <div class="data-box"><span>Área Envolvida</span><div id="r_area"></div></div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label>Assunto</label>
+          <div style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border); font-weight:700;" id="r_subject"></div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label>Mensagem Completa do Relato</label>
+          <div style="background:#f8fafc; padding:16px; border-radius:8px; border:1px solid var(--border); white-space: pre-wrap;" id="r_msg"></div>
+        </div>
+
+        <div style="margin-bottom: 20px;" id="r_ident_box">
+          <label style="color:#ef4444;">🚨 Dados de Identificação (Sigiloso)</label>
+          <div style="background:#fef2f2; padding:12px; border-radius:8px; border:1px solid #fca5a5; font-size:14px;" id="r_ident_data"></div>
+        </div>
+
+        <hr style="border:0; border-top:1px solid var(--border); margin:24px 0;">
+
+        <!-- Área Administrativa de Gerenciamento do Status -->
+        <h4 style="color:var(--masa-navy); margin-bottom:12px;">Gestão do Relato</h4>
+        <form id="formStatus">
+          <input type="hidden" id="r_id_manage">
+          <div class="field">
+            <label>Alterar Status</label>
+            <select id="manage_status" required>
+              <option value="Recebido">Recebido</option>
+              <option value="Em análise">Em análise</option>
+              <option value="Concluído">Concluído</option>
+              <option value="Arquivado">Arquivado</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Anotações Internas (Não visível para o denunciante)</label>
+            <textarea id="manage_notes" placeholder="Adicione observações da apuração aqui..."></textarea>
+          </div>
+          
+          <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+            <button class="btn btn-primary" type="submit">Salvar Alterações</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ================= CONFIGURAÇÃO INICIAL =================
+    const token = localStorage.getItem('masa_token');
+    if(!token) window.location.href = '/admin/login.html';
+
+    // Cache local de notícias para edição
+    let adminNewsCache = [];
+    let userRole = 'admin'; // Padrão caso não consiga ler
+
+    try {
+      // Lê o token JWT sem usar libs externas
+      const payload = JSON.parse(decodeURIComponent(
+        atob(token.split('.')[1]).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
+      ));
+      
+      // Armazena a role (cargo) do usuário vinda do banco de dados (ex: 'admin' ou 'editor')
+      userRole = payload.role || 'admin'; 
+      
+      // Exibe o nome do usuário logado
+      document.getElementById('admin-name').textContent = payload.name || payload.email;
+
+      // === A MAGIA ACONTECE AQUI ===
+      // Se o usuário NÃO for admin (ex: for 'editor'), ESCONDE o menu de Denúncias
+      if (userRole !== 'admin') {
+        const menuReports = document.getElementById('menu-reports');
+        if (menuReports) {
+          menuReports.style.display = 'none'; // Some com o botão da lateral
+        }
+      }
+    } catch(e) {
+      console.error("Erro ao ler o token:", e);
+    }
+
+    function logout() {
+      localStorage.removeItem('masa_token');
+      window.location.href = '/admin/login.html';
+    }
+
+    function switchSection(sec) {
+      // === TRAVA DE SEGURANÇA NO FRONT-END ===
+      // Se tentar acessar 'reports' (Denúncias) e NÃO for admin, bloqueia!
+      if (sec === 'reports' && userRole !== 'admin') {
+        alert("Acesso Negado: Seu perfil tem permissão apenas para gerenciar Notícias.");
+        return; 
+      }
+
+      document.getElementById('sec-news').style.display = sec === 'news' ? 'block' : 'none';
+      document.getElementById('sec-reports').style.display = sec === 'reports' ? 'block' : 'none';
+      
+      document.getElementById('menu-news').classList.toggle('active', sec === 'news');
+      document.getElementById('menu-reports').classList.toggle('active', sec === 'reports');
+      
+      if(sec === 'news') loadAdminNews();
+      if(sec === 'reports') loadAdminReports();
+    }
+
+    function closeModals() {
+      document.getElementById('modalNews').style.display = 'none';
+      document.getElementById('modalReport').style.display = 'none';
+    }
+
+    function getStatusBadge(status) {
+      if(status === 'Concluído') return `<span class="badge green">${status}</span>`;
+      if(status === 'Em análise') return `<span class="badge yellow">${status}</span>`;
+      if(status === 'Arquivado') return `<span class="badge" style="background:#e2e8f0; color:#475569; border-color:#cbd5e1;">${status}</span>`;
+      return `<span class="badge">${status}</span>`; 
+    }
+
+    // ================= ABA: NOTÍCIAS =================
+    
+    async function loadAdminNews() {
+      try {
+        const res = await fetch('/api/news');
+        const news = await res.json();
+        adminNewsCache = news; 
+        
+        const tbody = document.querySelector('#tableNews tbody');
+        
+        if(news.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#6b7280;">Nenhuma notícia cadastrada.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = news.map(n => {
+          const thumbUrl = n.image_url ? window.location.origin + n.image_url : '';
+          
+          return `
+          <tr>
+            <td>
+              ${thumbUrl ? `<img src="${thumbUrl}" class="thumb-img" alt="Capa">` : `<div class="thumb-img"></div>`}
+            </td>
+            <td>${new Date(n.published_at).toLocaleDateString()}</td>
+            <td><strong>${n.title}</strong></td>
+            <td><span class="badge">${n.category}</span></td>
+            <td style="text-align:right;">
+              <button class="btn btn-secondary" onclick="editNews(${n.id})" style="margin-right:5px;">Editar</button>
+              <button class="btn btn-danger" onclick="deleteNews(${n.id})">Excluir</button>
+            </td>
+          </tr>
+        `}).join('');
+      } catch (err) {
+        console.error("Erro ao carregar lista de notícias no painel");
+      }
+    }
+
+    function openNewsModal() {
+      document.getElementById('formNews').reset();
+      document.getElementById('n_id').value = '';
+      document.getElementById('newsModalTitle').textContent = 'Criar Nova Notícia';
+      document.getElementById('modalNews').style.display = 'flex';
+    }
+
+    function editNews(id) {
+      const newsToEdit = adminNewsCache.find(n => n.id === id);
+      if(!newsToEdit) return;
+
+      document.getElementById('formNews').reset();
+      document.getElementById('n_id').value = newsToEdit.id;
+      document.getElementById('n_title').value = newsToEdit.title;
+      document.getElementById('n_cat').value = newsToEdit.category;
+      document.getElementById('n_excerpt').value = newsToEdit.excerpt;
+      document.getElementById('n_content').value = newsToEdit.content;
+
+      document.getElementById('newsModalTitle').textContent = 'Editar Notícia';
+      document.getElementById('modalNews').style.display = 'flex';
+    }
+
+    document.getElementById('formNews').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('title', document.getElementById('n_title').value);
+      formData.append('category', document.getElementById('n_cat').value);
+      formData.append('excerpt', document.getElementById('n_excerpt').value);
+      formData.append('content', document.getElementById('n_content').value);
+      
+      if(document.getElementById('n_image').files[0]) {
+        formData.append('image', document.getElementById('n_image').files[0]);
+      }
+
+      const id = document.getElementById('n_id').value;
+      const url = id ? `/api/news/${id}` : '/api/news';
+      const method = id ? 'PUT' : 'POST';
+
+      try {
+        const res = await fetch(url, {
+          method: method,
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        
+        if(res.ok) {
+          closeModals();
+          loadAdminNews();
+        } else {
+          alert('Erro ao salvar a notícia.');
+        }
+      } catch(err) {
+        alert('Erro de conexão.');
+      }
+    });
+
+    async function deleteNews(id) {
+      if(confirm('Atenção: Tem certeza que deseja excluir esta notícia? Esta ação não pode ser desfeita.')) {
+        await fetch(`/api/news/${id}`, { 
+          method: 'DELETE', 
+          headers: { 'Authorization': `Bearer ${token}` } 
+        });
+        loadAdminNews();
+      }
+    }
+
+    // ================= ABA: DENÚNCIAS =================
+
+    async function loadAdminReports() {
+      try {
+        const res = await fetch('/api/reports/admin/all', { headers: { 'Authorization': `Bearer ${token}` } });
+        
+        // Verifica se o backend bloqueou por causa do novo Role Middleware (Erro 403 Forbidden)
+        if(res.status === 403) {
+           document.querySelector('#tableReports tbody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:#ef4444; font-weight:bold;">Acesso Negado: Perfil de editor não tem permissão para visualizar Denúncias.</td></tr>';
+           return;
+        }
+
+        const reports = await res.json();
+        const tbody = document.querySelector('#tableReports tbody');
+        
+        if(reports.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#6b7280;">Nenhuma denúncia nos últimos 7 dias.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = reports.map(r => `
+          <tr>
+            <td><strong>${r.protocol}</strong></td>
+            <td>${new Date(r.created_at).toLocaleString()}</td>
+            <td>${r.type.toUpperCase()}</td>
+            <td>${r.subject}</td>
+            <td>${getStatusBadge(r.status)}</td>
+            <td style="text-align:right;">
+              <button class="btn btn-secondary" onclick="openReportModal(${r.id})">🔍 Detalhes</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error("Erro ao carregar denúncias", err);
+      }
+    }
+
+    async function openReportModal(id) {
+      try {
+        const res = await fetch(`/api/reports/admin/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if(res.status === 403) return alert("Acesso Negado.");
+        
+        const r = await res.json();
+
+        document.getElementById('r_protocol_title').textContent = r.protocol;
+        document.getElementById('r_date').textContent = new Date(r.created_at).toLocaleString();
+        document.getElementById('r_type').textContent = r.type.toUpperCase();
+        document.getElementById('r_relation').textContent = r.relation;
+        document.getElementById('r_area').textContent = r.area;
+        document.getElementById('r_subject').textContent = r.subject;
+        document.getElementById('r_msg').textContent = r.message;
+
+        const identBox = document.getElementById('r_ident_box');
+        if(r.is_identified) {
+          identBox.style.display = 'block';
+          document.getElementById('r_ident_data').innerHTML = `
+            <strong>Nome:</strong> ${r.reporter_name || 'Não preenchido'}<br>
+            <strong>E-mail:</strong> ${r.reporter_email || 'Não preenchido'}
+          `;
+        } else {
+          identBox.style.display = 'none';
+        }
+
+        document.getElementById('r_id_manage').value = r.id;
+        document.getElementById('manage_status').value = r.status || 'Recebido';
+        document.getElementById('manage_notes').value = r.admin_notes || '';
+
+        document.getElementById('modalReport').style.display = 'flex';
+      } catch (err) {
+        alert('Erro ao carregar detalhes da denúncia.');
+      }
+    }
+
+    document.getElementById('formStatus').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('r_id_manage').value;
+      const status = document.getElementById('manage_status').value;
+      const admin_notes = document.getElementById('manage_notes').value;
+
+      try {
+        const res = await fetch(`/api/reports/admin/${id}/status`, {
+          method: 'PUT',
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status, admin_notes })
+        });
+
+        if(res.ok) {
+          closeModals();
+          loadAdminReports(); 
+        } else {
+          alert('Erro ao atualizar o status.');
+        }
+      } catch(err) {
+        alert('Erro de conexão ao salvar.');
+      }
+    });
+
+    // Inicia a tela carregando as notícias como página principal
+    switchSection('news');
+
+  </script>
+
+</body>
+</html>
+<!--teste-->

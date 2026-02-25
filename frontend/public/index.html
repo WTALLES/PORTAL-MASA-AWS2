@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MASA - Notícias | Fale Conosco</title>
+  
+  <style>
+    /* CSS EMBUTIDO */
+    :root{
+      --masa-navy:#1e3a5f;
+      --masa-blue:#2d5a8a;
+      --masa-sky:#5eb9f0;
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --shadow:0 6px 24px rgba(0,0,0,.08);
+      --radius:14px;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:#fff;line-height:1.5;}
+
+    /* Header */
+    header{
+      background:#fff;
+      position:sticky;top:0;z-index:1000;
+      border-bottom:1px solid rgba(17,24,39,.08);
+    }
+    .header-container{
+      max-width:1200px;margin:0 auto;padding:16px 20px;
+      display:flex;align-items:center;justify-content:space-between;gap:16px;
+    }
+    .logo{
+      font-size:30px;font-weight:900;letter-spacing:.5px;color:var(--masa-navy);
+      line-height:1;cursor:pointer;
+    }
+    .logo span{display:block;font-size:12px;font-weight:600;color:#64748b;margin-top:6px;}
+
+    nav{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+    .nav-btn{
+      appearance:none;border:1px solid transparent;background:transparent;
+      padding:10px 14px;border-radius:999px;cursor:pointer;
+      font-weight:800;color:var(--masa-navy);
+      transition:.2s ease;
+    }
+    .nav-btn:hover{background:rgba(94,185,240,.12);border-color:rgba(94,185,240,.25);}
+    .nav-btn.active{background:var(--masa-sky);color:#fff;border-color:var(--masa-sky);box-shadow:0 8px 20px rgba(94,185,240,.25);}
+
+    /* Shared */
+    .container{max-width:1200px;margin:0 auto;padding:0 20px;}
+    .view{display:none;}
+    .view.active{display:block;}
+
+    .hero{
+      background:linear-gradient(135deg,var(--masa-navy) 0%, var(--masa-blue) 100%);
+      color:#fff;
+      padding:56px 20px;
+      text-align:center;
+    }
+    .hashtag{color:var(--masa-sky);font-weight:800;letter-spacing:.2px;display:inline-block;margin-bottom:10px;}
+    .hero h1{font-size:44px;line-height:1.1;margin-bottom:14px;}
+    .hero p{color:rgba(255,255,255,.92);max-width:820px;margin:0 auto;font-size:16px;}
+    .highlight{color:var(--masa-sky);}
+
+    /* News / Filters */
+    .filter-tabs{
+      max-width:1200px;margin:-26px auto 0;padding:0 20px;position:relative;z-index:10;
+    }
+    .tabs{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+    .tab{
+      background:#fff;color:var(--masa-navy);
+      padding:12px 22px;border-radius:999px;border:2px solid rgba(17,24,39,.08);
+      cursor:pointer;transition:.2s ease;font-weight:800;
+    }
+    .tab:hover,.tab.active{background:var(--masa-sky);border-color:var(--masa-sky);color:#fff;transform:translateY(-1px);box-shadow:0 10px 22px rgba(94,185,240,.25);}
+
+    .content-wrap{padding:46px 0 70px;background:#fff;}
+    
+    .news-grid{
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:22px;margin-top:22px;
+    }
+    .news-card{
+      background:var(--card);border:1px solid rgba(17,24,39,.08);border-radius:var(--radius);
+      box-shadow:var(--shadow);overflow:hidden;cursor:pointer;transition:.2s ease;
+      display:flex; flex-direction:column;
+    }
+    .news-card:hover{transform:translateY(-4px);box-shadow:0 10px 34px rgba(0,0,0,.12);}
+    
+    /* CORREÇÃO DA IMAGEM DA NOTÍCIA NO CARD DA HOME */
+    .news-image {
+      height: 200px;
+      width: 100%;
+      background: linear-gradient(135deg,var(--masa-navy),var(--masa-sky));
+    }
+    .news-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; 
+      object-position: top center;
+      display: block;
+    }
+
+    .news-content{padding:18px 18px 20px; flex:1; display:flex; flex-direction:column;}
+    .chip{
+      display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;
+      background:var(--masa-navy);color:#fff;font-size:12px;font-weight:900;margin-bottom:10px;
+      align-self:flex-start;
+    }
+    .news-date{color:var(--masa-sky);font-weight:800;font-size:13px;margin-bottom:10px;}
+    .news-title{color:var(--masa-navy);font-size:18px;line-height:1.25;font-weight:900;margin-bottom:10px;}
+    .news-excerpt{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:14px; flex:1;}
+    .read-more{color:var(--masa-sky);font-weight:900;text-decoration:none;font-size:14px;}
+
+    /* LENDO A NOTÍCIA */
+    .article-wrap { max-width:800px; margin: 40px auto; padding: 0 20px; }
+    .btn-back { display:inline-flex; align-items:center; gap:8px; color:var(--masa-navy); font-weight:800; text-decoration:none; margin-bottom:20px; cursor:pointer; }
+    .btn-back:hover { color:var(--masa-sky); text-decoration:underline; }
+    .article-header { margin-bottom: 30px; text-align:center; }
+    .article-title { font-size:36px; color:var(--masa-navy); font-weight:900; line-height:1.2; margin-bottom:16px; }
+    .article-meta { color:var(--muted); font-size:14px; font-weight:600; display:flex; gap:10px; justify-content:center; align-items:center; }
+    
+    .article-cover { 
+      width: 100%; 
+      max-height: 500px; 
+      object-fit: contain; 
+      background-color: #f1f5f9; 
+      border-radius: var(--radius); 
+      margin-bottom: 40px; 
+      box-shadow: var(--shadow); 
+    }
+    
+    .article-body { font-size:17px; line-height:1.8; color:#374151; white-space:pre-wrap; text-align:justify; }
+    
+    .related-news { margin-top:60px; padding-top:40px; border-top:1px solid var(--border); }
+    .related-news h3 { color:var(--masa-navy); font-size:24px; font-weight:900; margin-bottom:20px; }
+
+    /* Compliance View */
+    .compliance-view{display:none;}
+    .compliance-view.active{display:block;}
+    .grid-2{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;}
+    .card{background:#fff;border:1px solid rgba(17,24,39,.08);border-radius:var(--radius);padding:18px;}
+    .card h3{color:var(--masa-navy);font-size:18px;margin-bottom:10px;font-weight:1000;}
+    .muted{color:var(--muted);font-size:13px;line-height:1.6;}
+    .divider{border:0;border-top:1px solid var(--border);margin:14px 0;}
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
+      background:rgba(94,185,240,.14);color:var(--masa-navy);font-weight:900;font-size:12px;
+      border:1px solid rgba(94,185,240,.25);
+    }
+
+    /* Fale Conosco */
+    /* Fale Conosco */
+    .fc-wrap{background:var(--bg);padding:46px 0 70px;}
+    .panel{background:#fff;border:1px solid rgba(17,24,39,.08);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+    .subtabs{display:flex;gap:0;flex-wrap:wrap;border-bottom:1px solid var(--border);background:#fbfcfe;}
+    .subtab{
+      border:0;background:transparent;cursor:pointer;padding:14px 16px;font-weight:900;
+      color:var(--masa-navy);border-bottom:3px solid transparent;transition:.15s ease;
+    }
+    .subtab:hover{background:rgba(94,185,240,.10);}
+    .subtab.active{border-bottom-color:var(--masa-sky);background:#fff;}
+    .subpanel{display:none;padding:22px;}
+    .subpanel.active{display:block;}
+
+    /* Contact & Forms */
+    .contact-list{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
+    .contact-item{
+      border:1px solid var(--border);border-radius:12px;padding:12px;background:#fff;
+      display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    }
+    .link-btn{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;
+      border:1px solid rgba(17,24,39,.10);background:#fbfcff;text-decoration:none;
+      color:var(--masa-navy);font-weight:900;font-size:13px;
+    }
+    .link-btn:hover{border-color:rgba(94,185,240,.45); box-shadow:0 0 0 4px rgba(94,185,240,.14);}
+
+    form{margin-top:10px;}
+    .field{margin-bottom:12px;}
+    label{display:block;font-weight:900;color:var(--masa-navy);font-size:13px;margin-bottom:6px;}
+    input,select,textarea{
+      width:100%;border:1px solid #d7dde5;border-radius:12px;padding:12px 12px;
+      font-size:14px;outline:none;font-family:inherit;background:#fff;
+    }
+    textarea{resize:vertical;min-height:120px;}
+    input:focus,select:focus,textarea:focus{border-color:rgba(94,185,240,.9);box-shadow:0 0 0 4px rgba(94,185,240,.18);}
+
+    .row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+
+    .btn{
+      width:100%;border:0;border-radius:12px;padding:12px 14px;font-weight:1000;
+      cursor:pointer;transition:.15s ease;font-size:14px;
+    }
+    .btn-primary{background:var(--masa-sky);color:#fff;}
+    .btn-primary:hover{filter:brightness(.95);}
+    .btn-secondary{background:var(--masa-navy);color:#fff;}
+    .btn-secondary:hover{filter:brightness(.95);}
+    .btn-light{background:#eef2f7;color:var(--masa-navy);}
+    .btn-light:hover{filter:brightness(.97);}
+    .btn-danger{background:#ef4444;color:#fff;}
+    .btn-danger:hover{filter:brightness(.95);}
+
+    .result{
+      display:none;margin-top:12px;border-radius:12px;padding:12px;
+      border:1px solid var(--border);background:#f8fafc;font-size:14px;
+    }
+
+    @media (max-width: 900px){
+      .hero h1{font-size:34px;}
+      .article-title{font-size:28px;}
+      .grid-2, .row-3, .row-2{grid-template-columns:1fr;}
+      .header-container{flex-direction:column;align-items:flex-start;}
+      nav{width:100%;}
+      .nav-btn{flex:1;}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <div class="logo" onclick="switchMainView('noticias')">MASA <span>MOLDS & PLASTICS</span></div>
+      <nav aria-label="Navegação principal">
+        <button class="nav-btn active" id="navNoticias" type="button" onclick="switchMainView('noticias')">NOTÍCIAS</button>
+        <button class="nav-btn" id="navFaleConosco" type="button" onclick="switchMainView('faleconosco')">FALE CONOSCO</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- VIEW: NOTÍCIAS / COMPLIANCE -->
+  <section class="view active" id="viewNoticias">
+    <section class="hero" id="homeHero">
+      <div class="container">
+        <span class="hashtag">#somosamasa</span>
+        <h1 id="heroTitle">Notícias e <span class="highlight">Atualizações</span></h1>
+        <p id="heroDesc">Acompanhe comunicados, eventos e conteúdos institucionais.</p>
+      </div>
+    </section>
+
+    <!-- Filtros de Notícias -->
+    <section class="filter-tabs" id="homeFilters">
+      <div class="tabs" role="tablist">
+        <button class="tab active" onclick="loadNews('Todos')">Todas</button>
+        <button class="tab" onclick="loadNews('Institucional')">Institucional</button>
+        <button class="tab" onclick="loadNews('Sustentabilidade')">Sustentabilidade</button>
+        <button class="tab" onclick="loadNews('RH')">RH</button>
+        <button class="tab" style="background:#f0fdf4;border-color:#bbf7d0;color:#166534;" onclick="showCompliance()">Compliance</button>
+      </div>
+    </section>
+
+    <!-- Grade de Notícias -->
+    <section class="content-wrap container" id="homeContent">
+      <div id="newsSection">
+        <div class="news-grid" id="newsGrid">
+          <!-- Notícias injetadas via JS -->
+        </div>
+      </div>
+
+      <!-- COMPLIANCE SECTION -->
+      <div id="complianceSection" class="compliance-view" style="display:none;">
+        <div class="grid-2">
+          <div class="card">
+            <h3>Compliance Corporativo</h3>
+            <p class="muted">Práticas e informações voltadas à integridade, qualidade e conformidade.</p>
+            <hr class="divider"/>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <span class="badge">ISO 9001</span><span class="badge">RMI (minerais responsáveis)</span>
+            </div>
+            <hr class="divider"/>
+            <h3>Política RBA</h3>
+            <p class="muted">Práticas voltadas ao cliente.</p>
+            <button class="btn btn-primary" onclick="window.open('/uploads/documents/RBA.pdf', '_blank')" style="margin-top: 10px;">Visualizar RBA</button>
+          </div>
+          
+          <div class="card">
+            <h3>Documentos e Políticas</h3>
+            <p class="muted">Acesse nossos documentos oficiais.</p>
+            <hr class="divider"/>
+            <div class="field">
+              <label for="docSelect">Selecione o documento</label>
+              <select id="docSelect">
+                <option value="">Escolha um documento...</option>
+                <option value="00. MATRIZ DE POLITICAS E PROCEDIMENTOS RBA_CONTROLE revisao 09.pdf">Matriz de Políticas e Procedimentos RBA</option>
+                <option value="1. PO-001__Rev. 01_POLÍTICA E PROCEDIMENTOS PARA RECRUTAMENTO & SELEÇÃO.pdf">Política de Recrutamento e Seleção</option>
+                <option value="3. PO-003__Rev. 01_POLÍTICA DE JORNADA DE TRABALHO E PROCED PARA ALTERAÇÃO DE TURNO.pdf">Política de Jornada de Trabalho</option>
+                <option value="4. PO-004__Rev. 01_POLÍTICA E PROCEDIMENTO PARA JOVENS TRABALHADORES.pdf">Política para Jovens Trabalhadores</option>
+                <option value="5. PO-005__Rev. 01_POLÍTICA E PROCEDIMENTO DE SALÁRIOS E BENEFÍCIOS.pdf">Política de Salários e Benefícios</option>
+                <option value="8. PO-008__Rev. 01_POLÍTICA DE PAGAMENTO DE DEDUÇÕES GOVERNAMENTAIS.pdf">Política de Pagamento de Deduções</option>
+                <option value="9. PO-009__Rev.02_POLÍTICA DE TRATAM. DIGNO E PROC. MEDIDAS DISCIP.pdf">Política de Tratamento Digno e Medidas Discip.</option>
+                <option value="10. PO-010__Rev. 01_POLÍTICA DE NÃO DISCRIMINAÇÃO.pdf">Política de Não Discriminação</option>
+                <option value="11. PO-011__Rev. 01_POLÍTICA DE LIBERDADE DE ASSOCIAÇÃO.pdf">Política de Liberdade de Associação</option>
+                <option value="12...... PGI-012_REV  02__ CANAIS DE COMUNICAÇÃO.pdf">Canais de Comunicação</option>
+                <option value="13.... PGI-013__Rev.01_PROCEDIMENTO PARA PRÁTICAS RELIGIOSAS.pdf">Procedimento para Práticas Religiosas</option>
+                <option value="13.1_ PO-013__Rev. 02_POLÍTICA E PROCEDIMENTO DE FÉRIAS.pdf">Política e Procedimento de Férias</option>
+                <option value="14 . PO-014__Rev.01_POLÍTICADE COMPLIANCE.pdf">Política de Compliance</option>
+                <option value="15. PO-015__Rev.02_POLÍTICA DE BRINDES E PRESENTES.pdf">Política de Brindes e Presentes</option>
+                <option value="16. PO-016__Rev.01_POLÍTICAS DE CONTROLES INTERNOS.pdf">Políticas de Controles Internos</option>
+                <option value="17. PO-017_Rev. 03_POLÍTICA E PROCEDIMENTOS DE DENÚNCIA E PROCESSO DE APURAÇÃO INTERNA.pdf">Política de Denúncia e Apuração</option>
+                <option value="18. PO-018__Rev.01_POLÍTICA E PROCEDIMENTO ANTICORRUPÇÃO.pdf">Política Anticorrupção</option>
+                <option value="19. PO-019__Rev.00_POLÍTICA DE TRAB LIVREMENTE ESCOLHIDO E PROCED DE MONITORAM AO TRAB FORÇADO.pdf">Política de Trabalho Livremente Escolhido</option>
+                <option value="20. PO-020_Rev. 00_POLÍTICA E PROCEDIMENTO DE PROTEÇÃO DA PROPRIEDADE INTELECTUAL E PRIVACIDADE.pdf">Política de Propriedade Intelectual e Privacidade</option>
+                <option value="21. PO-021_Rev.00_POLÍTICA E PROCEDIMENTO DE ANTICONLUIO.pdf">Política Anticonluio</option>
+                <option value="22.PO-022_Rev.00_POLÍTICA DE RESPONSABILIDADE E AUTORIDADES TRABALHISTAS.pdf">Política de Responsabilidade Trabalhista</option>
+              </select>
+            </div>
+            <button class="btn btn-light" type="button" onclick="baixarDocumento()">Baixar Documento</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- VIEW: LEITOR DE NOTÍCIA COMPLETA (NOVO) -->
+  <section class="view" id="viewNewsReader">
+    <div class="article-wrap">
+      <a class="btn-back" onclick="switchMainView('noticias')">
+        &larr; Voltar para as Notícias
+      </a>
+      
+      <div class="article-header">
+        <span class="chip" id="readerCat" style="align-self:center; margin-bottom:15px; font-size:14px; padding:8px 16px;"></span>
+        <h1 class="article-title" id="readerTitle"></h1>
+        <div class="article-meta">
+          Publicado em: <span id="readerDate"></span>
+        </div>
+      </div>
+
+      <img src="" id="readerImage" class="article-cover" alt="Capa da Notícia" style="display:none;">
+      
+      <div class="article-body" id="readerContent"></div>
+
+      <!-- Leia também -->
+      <div class="related-news">
+        <h3>Leia Também</h3>
+        <div class="news-grid" id="relatedNewsGrid">
+          <!-- Preenchido via JS com até 3 notícias -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: FALE CONOSCO / DENÚNCIAS -->
+  <section class="view" id="viewFaleConosco" style="display:none;">
+    <section class="hero">
+      <div class="container">
+        <span class="hashtag">#somosamasa</span>
+        <h1><span class="highlight">Fale Conosco</span></h1>
+        <p>Canais de comunicação, ouvidoria e canal de denúncias.</p>
+      </div>
+    </section>
+
+    <section class="fc-wrap container">
+      <div class="panel">
+        
+        <!-- SUBTABS DE NAVEGAÇÃO -->
+        <div class="subtabs">
+          <button class="subtab active" onclick="switchSubTab('fcCanais')">Canais de comunicação</button>
+          <button class="subtab" onclick="switchSubTab('fcDenuncia')">Canal de denúncias</button>
+          <button class="subtab" onclick="switchSubTab('fcConsulta')">Consultar Protocolo</button>
+        </div>
+
+        <!-- ABA 1: CANAIS DE COMUNICAÇÃO -->
+        <div class="subpanel active" id="fcCanais">
+          <div class="grid-2">
+            <div class="card">
+              <h3>Canais de comunicação</h3>
+              <p class="muted">Use estes canais para dúvidas gerais, comercial, suporte e assuntos institucionais.</p>
+              <div class="contact-list">
+                <div class="contact-item">
+                  <div><strong>SAC</strong><div class="muted">Atendimento ao cliente</div><div style="margin-top:6px;font-weight:900;color:var(--text);">+55 92 3616-8203</div></div>
+                  <div class="contact-actions"><a class="link-btn" href="tel:+559236168203">Ligar</a></div>
+                </div>
+                <!--<div class="contact-item">
+                  <div><strong>Comercial</strong><div class="muted">Fale com a MASA</div><div style="margin-top:6px;font-weight:900;color:var(--text);">+55 92 98268-0097</div></div>
+                  <div class="contact-actions"><a class="link-btn" href="https://wa.me/5592982680097" target="_blank">WhatsApp</a></div>
+                </div>-->
+                <div class="contact-item">
+                  <div><strong>E-mail</strong><div class="muted">Dúvidas gerais</div><div style="margin-top:6px;font-weight:900;color:var(--text);">masa@masaplasticos.com</div></div>
+                  <div class="contact-actions"><a class="link-btn" href="mailto:masa@masaplasticos.com">Enviar</a></div>
+                </div>
+                <div class="contact-item">
+                  <div><strong>Trabalhe conosco</strong><div class="muted">Recrutamento</div><div style="margin-top:6px;font-weight:900;color:var(--text);">selecao@masaplasticos.com</div></div>
+                  <div class="contact-actions"><a class="link-btn" href="mailto:selecao@masaplasticos.com">Enviar</a></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>Ouvidoria</h3>
+              <p class="muted">Canal para manifestações sensíveis com tratamento confidencial.</p>
+              <div class="contact-list">
+                <div class="contact-item">
+                  <div><strong>Telefone Ouvidoria</strong><div class="muted">+55 92 98100-0023</div></div>
+                  <div class="contact-actions"><a class="link-btn" href="tel:+5592981000023">Ligar</a></div>
+                </div>
+                <div class="contact-item">
+                  <div><strong>E-mail Ouvidoria</strong><div class="muted">ouvidoria@masaplasticos.com</div></div>
+                  <div class="contact-actions"><a class="link-btn" href="mailto:ouvidoria@masaplasticos.com">Enviar</a></div>
+                </div>
+              </div>
+              <hr class="divider"/>
+              <h3 style="margin-top:6px;">Formulário rápido</h3>
+              <form id="contactForm" onsubmit="alert('Em produção, isso enviará um e-mail de contato.'); return false;">
+                <div class="row-2">
+                  <div class="field"><label>Nome</label><input type="text" placeholder="Seu nome" required></div>
+                  <div class="field"><label>E-mail</label><input type="email" placeholder="nome@exemplo.com" required></div>
+                </div>
+                <div class="field"><label>Assunto</label><input type="text" placeholder="Ex.: Dúvida, solicitação..." required></div>
+                <div class="field"><label>Mensagem</label><textarea minlength="10" placeholder="Escreva sua mensagem..." required></textarea></div>
+                <button class="btn btn-primary" type="submit">Enviar mensagem</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- ABA 2: CANAL DE DENÚNCIAS -->
+        <div class="subpanel" id="fcDenuncia" style="display:none;">
+          <div class="card">
+            <h3>Fazer denúncia / reclamação</h3>
+            <form id="reportForm">
+              <div class="row-2">
+                <div class="field">
+                  <label>Tipo</label>
+                  <select name="type" required>
+                    <option value="denuncia">Denúncia</option>
+                    <option value="reclamacao">Reclamação</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Sua relação com a MASA</label>
+                  <select name="relation" required>
+                    <option value="Funcionario">Funcionário</option>
+                    <option value="Fornecedor">Fornecedor</option>
+                    <option value="Terceiro">Terceiro</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <label>Área envolvida</label>
+                <input name="area" type="text" required>
+              </div>
+              <div class="field">
+                <label>Assunto</label>
+                <input name="subject" type="text" required>
+              </div>
+              <div class="field">
+                <label>Mensagem / Relato completo</label>
+                <textarea name="message" required></textarea>
+              </div>
+              <div class="field">
+                <label>Identificação (Opcional)</label>
+                <select name="is_identified" onchange="document.getElementById('identFiles').style.display = this.value === 'true' ? 'block' : 'none'">
+                  <option value="false">Quero ser Anônimo</option>
+                  <option value="true">Quero me Identificar</option>
+                </select>
+              </div>
+              <div id="identFiles" style="display:none;">
+                <input type="text" name="reporter_name" placeholder="Seu Nome" style="margin-bottom:10px;">
+                <input type="email" name="reporter_email" placeholder="Seu E-mail" style="margin-bottom:10px;">
+              </div>
+              <!--CAMPO PARA ENVIAR FOTOS DESATIVADO, PARA ATIVAR BASTA RETIRAR A MARCAÇÃO DE COMENTARIOS-->
+              <!--<div class="field">
+                <label>Anexar Provas (opcional)</label>
+                <input type="file" name="files" multiple>
+              </div>-->
+              <button class="btn btn-primary" type="submit">Enviar Relato</button>
+              <div id="reportResult" class="result" style="display:none;"></div>
+            </form>
+          </div>
+        </div>
+
+        <!-- ABA 3: CONSULTAR PROTOCOLO E LISTAGEM PÚBLICA -->
+        <div class="subpanel" id="fcConsulta" style="display:none;">
+          <div class="card">
+            <h3>Consultar Andamento</h3>
+            <div class="field">
+              <input id="protocolInput" type="text" placeholder="Digite seu protocolo (Ex: MASA-XXX)">
+            </div>
+            <button class="btn btn-secondary" onclick="checkProtocol()">Consultar</button>
+            <div id="protocolResult" class="result" style="display:none; margin-top:15px; padding:15px; border:1px solid var(--border); border-radius:12px;"></div>
+          </div>
+
+          <!-- LISTA DOS ÚLTIMOS 7 DIAS -->
+          <div style="margin-top: 30px;">
+            <h3 style="color:var(--masa-navy); font-size:18px; margin-bottom:6px;">Denúncias Recentes (Últimos 7 dias)</h3>
+            <p class="muted" style="margin-bottom:16px;">Acompanhe o andamento das últimas manifestações (protocolos parcialmente ocultos por segurança).</p>
+            
+            <div id="publicReportsList" style="display:flex; flex-direction:column; gap:12px;">
+              <!-- Cards injetados via JS -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </section>
+
+  <script>
+    // Variável global para armazenar todas as notícias para a seção "Leia Também"
+    let allNewsCache = [];
+
+    // Navegação Principal entre Seções
+    function switchMainView(view) {
+      document.getElementById('viewNoticias').style.display = view === 'noticias' ? 'block' : 'none';
+      document.getElementById('viewNewsReader').style.display = view === 'leitor' ? 'block' : 'none';
+      document.getElementById('viewFaleConosco').style.display = view === 'faleconosco' ? 'block' : 'none';
+      
+      document.getElementById('navNoticias').classList.toggle('active', view === 'noticias' || view === 'leitor');
+      document.getElementById('navFaleConosco').classList.toggle('active', view === 'faleconosco');
+      
+      if(view === 'noticias') {
+        document.getElementById('homeHero').style.display = 'block';
+        document.getElementById('homeFilters').style.display = 'block';
+        document.getElementById('homeContent').style.display = 'block';
+        loadNews('Todos');
+        window.scrollTo({top:0, behavior:'smooth'});
+      }
+    }
+
+    // ========== NAVEGAÇÃO COMPLIANCE / SUBTABS ============
+    function switchSubTab(tabId) {
+      document.getElementById('fcCanais').style.display = 'none';
+      document.getElementById('fcDenuncia').style.display = 'none';
+      document.getElementById('fcConsulta').style.display = 'none';
+      
+      const btns = document.querySelectorAll('.subtabs .subtab');
+      btns.forEach(btn => btn.classList.remove('active'));
+      
+      document.getElementById(tabId).style.display = 'block';
+      document.querySelector(`button[onclick="switchSubTab('${tabId}')"]`).classList.add('active');
+
+      if(tabId === 'fcConsulta') loadPublicReports();
+    }
+
+    function showCompliance() {
+      document.getElementById('newsSection').style.display = 'none';
+      document.getElementById('complianceSection').style.display = 'block';
+      document.getElementById('heroTitle').innerHTML = 'Compliance <span class="highlight">Corporativo</span>';
+      
+      const btns = document.querySelectorAll('.filter-tabs .tab');
+      btns.forEach(btn => btn.classList.remove('active'));
+      document.querySelector('button[onclick="showCompliance()"]').classList.add('active');
+    }
+
+    function baixarDocumento() {
+      const doc = document.getElementById('docSelect').value;
+      if (doc) window.open('/uploads/documents/' + encodeURIComponent(doc), '_blank');
+      else alert("Selecione um documento na lista antes de clicar em Baixar.");
+    }
+
+    // ========== NOTÍCIAS (CARREGAR E LER) ============
+    async function loadNews(category) {
+      document.getElementById('newsSection').style.display = 'block';
+      document.getElementById('complianceSection').style.display = 'none';
+      document.getElementById('heroTitle').innerHTML = 'Notícias e <span class="highlight">Atualizações</span>';
+      
+      const btns = document.querySelectorAll('.filter-tabs .tab');
+      btns.forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`button[onclick="loadNews('${category}')"]`).classList.add('active');
+      
+      try {
+        const res = await fetch(`/api/news?category=${category}`);
+        const news = await res.json();
+        const grid = document.getElementById('newsGrid');
+        
+        // Salva as notícias para o "Leia também" depois
+        if(category === 'Todos') allNewsCache = news;
+
+        if(news.length === 0) {
+          grid.innerHTML = '<p>Nenhuma notícia encontrada.</p>';
+          return;
+        }
+
+        grid.innerHTML = news.map(n => `
+          <div class="news-card" onclick="readNews(${n.id})">
+            <div class="news-image">
+              ${n.image_url ? `<img src="${window.location.origin}${n.image_url}" alt="Capa">` : ''}
+            </div>
+            <div class="news-content">
+              <span class="chip">${n.category}</span>
+              <div class="news-date">${new Date(n.published_at).toLocaleDateString()}</div>
+              <div class="news-title">${n.title}</div>
+              <p class="news-excerpt">${n.excerpt}</p>
+              <div style="margin-top:auto; padding-top:10px;">
+                <span class="read-more">Ler matéria completa &rarr;</span>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        console.error("Erro ao carregar notícias");
+      }
+    }
+
+    // ABRIR LEITOR DE NOTÍCIA
+    async function readNews(id) {
+      try {
+        const res = await fetch(`/api/news/${id}`);
+        const n = await res.json();
+        
+        if(n.error) return alert("Notícia não encontrada");
+
+        // Esconde Home e Mostra Leitor
+        document.getElementById('homeHero').style.display = 'none';
+        document.getElementById('homeFilters').style.display = 'none';
+        document.getElementById('homeContent').style.display = 'none';
+        
+        switchMainView('leitor');
+        window.scrollTo({top:0});
+
+        // Preenche os dados
+        document.getElementById('readerCat').textContent = n.category;
+        document.getElementById('readerTitle').textContent = n.title;
+        document.getElementById('readerDate').textContent = new Date(n.published_at).toLocaleDateString();
+        document.getElementById('readerContent').textContent = n.content; // textContent preserva quebras de linha
+
+        const imgEl = document.getElementById('readerImage');
+        if(n.image_url) {
+          imgEl.src = window.location.origin + n.image_url;
+          imgEl.style.display = 'block';
+        } else {
+          imgEl.style.display = 'none';
+        }
+
+        // Preenche o Leia Também (pega 3 notícias aleatórias ou as mais recentes que não sejam essa)
+        const others = allNewsCache.filter(item => item.id !== n.id).slice(0, 3);
+        const relatedGrid = document.getElementById('relatedNewsGrid');
+        
+        if(others.length > 0) {
+          relatedGrid.innerHTML = others.map(o => `
+            <div class="news-card" onclick="readNews(${o.id})">
+              <div class="news-image">${o.image_url ? `<img src="${window.location.origin}${o.image_url}" alt="Capa">` : ''}</div>
+              <div class="news-content" style="padding:15px;">
+                <span class="chip" style="font-size:10px;">${o.category}</span>
+                <div class="news-title" style="font-size:15px;">${o.title}</div>
+                <div style="margin-top:auto;">
+                  <span class="read-more" style="font-size:12px;">Ler &rarr;</span>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          relatedGrid.innerHTML = '<p class="muted">Fique de olho em novas atualizações em breve.</p>';
+        }
+
+      } catch (err) {
+        alert("Erro ao abrir a matéria.");
+      }
+    }
+
+    // ========== DENÚNCIAS ============
+    document.getElementById('reportForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      
+      try {
+        const res = await fetch('/api/reports', { method: 'POST', body: formData });
+        const data = await res.json();
+        
+        const resultDiv = document.getElementById('reportResult');
+        resultDiv.style.display = 'block';
+        if(data.protocol) {
+          resultDiv.innerHTML = `✅ Relato enviado com sucesso! Guarde seu protocolo: <strong>${data.protocol}</strong>`;
+          e.target.reset();
+        } else {
+          resultDiv.innerHTML = `❌ Erro: ${data.error}`;
+        }
+      } catch (err) {
+        alert("Erro de conexão com o servidor.");
+      }
+    });
+
+    async function checkProtocol() {
+      const protocol = document.getElementById('protocolInput').value.trim();
+      const resultDiv = document.getElementById('protocolResult');
+      if(!protocol) return alert('Digite um protocolo');
+
+      try {
+        const res = await fetch(`/api/reports/check/${protocol}`);
+        const data = await res.json();
+        
+        resultDiv.style.display = 'block';
+        
+        if(data.error) {
+          resultDiv.innerHTML = `❌ ${data.error}`;
+        } else {
+          resultDiv.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <strong>Status:</strong> ${getStatusBadge(data.status)}
+            </div>
+            <strong>Assunto:</strong> ${data.subject}<br>
+            <strong>Data da Denúncia:</strong> ${new Date(data.created_at).toLocaleString()}
+          `;
+        }
+      } catch(err) {
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `❌ Erro de conexão com o servidor.`;
+      }
+    }
+
+    function getStatusBadge(status) {
+      if(status === 'Concluído') return `<span style="background:#dcfce7; color:#166534; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:800; border: 1px solid #bbf7d0;">Concluído</span>`;
+      if(status === 'Em análise') return `<span style="background:#fef9c3; color:#854d0e; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:800; border: 1px solid #fef08a;">Em análise</span>`;
+      if(status === 'Arquivado') return `<span style="background:#e2e8f0; color:#475569; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:800; border: 1px solid #cbd5e1;">Arquivado</span>`;
+      return `<span style="background:#e0f2fe; color:#1e3a8a; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:800; border: 1px solid #bae6fd;">Recebido</span>`;
+    }
+
+    async function loadPublicReports() {
+      try {
+        const res = await fetch('/api/reports/public');
+        const reports = await res.json();
+        const listDiv = document.getElementById('publicReportsList');
+        
+        if(reports.length === 0) {
+          listDiv.innerHTML = '<div style="padding:20px; text-align:center; background:#f8fafc; border-radius:12px; border:1px dashed #cbd5e1; color:#64748b;">Nenhuma denúncia registrada nos últimos 7 dias.</div>';
+          return;
+        }
+
+        listDiv.innerHTML = reports.map(r => `
+          <div style="background:#fff; border:1px solid var(--border); border-radius:12px; padding:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; box-shadow:0 2px 8px rgba(0,0,0,0.03);">
+            <div>
+              <div style="font-size:12px; color:var(--muted); font-weight:800; margin-bottom:4px;">
+                ${new Date(r.created_at).toLocaleDateString()} &bull; ${r.type.toUpperCase()}
+              </div>
+              <div style="font-weight:900; color:var(--masa-navy); font-size:15px; margin-bottom:4px;">${r.protocol}</div>
+              <div style="font-size:14px; color:var(--text);">${r.subject}</div>
+            </div>
+            <div>
+              ${getStatusBadge(r.status)}
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error("Erro ao carregar denúncias públicas");
+      }
+    }
+
+    // Inicializa
+    loadNews('Todos');
+  </script>
+</body>
+</html>
+</query>

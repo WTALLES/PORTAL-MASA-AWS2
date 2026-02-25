@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MASA - Admin Login</title>
+  
+  <style>
+    /* IDENTIDADE MASA - TEMA ESCURO (GLASSMORPHISM) */
+    :root {
+      --masa-navy: #1e3a5f;
+      --masa-navy-dark: #12253f;
+      --masa-sky: #5eb9f0;
+      --text-light: #f8fafc;
+      --input-bg: rgba(255, 255, 255, 0.1);
+      --input-border: rgba(255, 255, 255, 0.2);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      /* Fundo escuro imitando ondas/profundidade idêntico à imagem de referência */
+      background: radial-gradient(circle at 0% 0%, var(--masa-navy) 0%, var(--masa-navy-dark) 100%);
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Decoração de fundo (Bolhas soltas) */
+    body::before, body::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(94, 185, 240, 0.1);
+      z-index: 0;
+    }
+    body::before { width: 300px; height: 300px; top: -100px; left: -50px; }
+    body::after { width: 500px; height: 500px; bottom: -200px; right: -100px; background: rgba(0, 0, 0, 0.2); }
+
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+      padding: 20px;
+      z-index: 10; /* Fica acima das bolhas do fundo */
+    }
+
+    .card {
+      /* Efeito Glassmorphism (Translúcido igual à sua imagem) */
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+      padding: 50px 40px;
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 40px;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    
+    .logo span {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--masa-sky);
+      margin-top: 6px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .field {
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 13px;
+      margin-bottom: 8px;
+      padding-left: 4px;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--input-border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      font-size: 15px;
+      outline: none;
+      font-family: inherit;
+      background: var(--input-bg);
+      color: #fff;
+      transition: 0.3s ease;
+    }
+    
+    /* Muda a cor do texto do placeholder (dica dentro do input) */
+    input::placeholder { color: rgba(255, 255, 255, 0.4); }
+
+    input:focus {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: var(--masa-sky);
+      box-shadow: 0 0 15px rgba(94, 185, 240, 0.3);
+    }
+
+    .btn {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: 0.3s ease;
+      font-size: 16px;
+      margin-top: 15px;
+      background: var(--masa-sky);
+      color: #fff;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      box-shadow: 0 8px 20px rgba(94, 185, 240, 0.3);
+    }
+
+    .btn:hover {
+      background: #48a6de;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(94, 185, 240, 0.4);
+    }
+
+    #error-msg {
+      color: #ff8787;
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 20px;
+      display: none;
+      background: rgba(239, 68, 68, 0.1);
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .footer-text {
+      margin-top: 30px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
+      font-weight: 500;
+      z-index: 10;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="card">
+      
+      <div class="logo">
+        MASA <span>Admin Portal</span>
+      </div>
+
+      <form id="loginForm">
+        <div class="field">
+          <label>Usuário ou E-mail</label>
+          <input type="email" id="email" required placeholder="admin@masaplasticos.com">
+        </div>
+        
+        <div class="field">
+          <label>Senha de Acesso</label>
+          <input type="password" id="password" required placeholder="••••••••">
+        </div>
+        
+        <button class="btn" type="submit">LOGIN</button>
+        
+        <div id="error-msg">E-mail ou senha incorretos.</div>
+      </form>
+
+    </div>
+    
+    <div class="footer-text" style="text-align: center;">
+      &copy; 2026 MASA Molds & Plastics. Acesso restrito.
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const errorMsg = document.getElementById('error-msg');
+      
+      errorMsg.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const data = await res.json();
+        
+        if (data.token) {
+          // Salva o token no navegador e redireciona para o painel
+          localStorage.setItem('masa_token', data.token);
+          window.location.href = '/admin/dashboard.html';
+        } else {
+          errorMsg.textContent = data.error || 'Falha no login';
+          errorMsg.style.display = 'block';
+        }
+      } catch (err) {
+        errorMsg.textContent = 'Erro ao conectar com o servidor.';
+        errorMsg.style.display = 'block';
+      }
+    });
+  </script>
+
+</body>
+</html>
+<!--teste-->
