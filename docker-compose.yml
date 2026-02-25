@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  app:
+    build: .  # Builda do Dockerfile
+    ports:
+      - "3000:3000"  # Acessível em http://localhost:3000
+    volumes:
+      - ./backend/uploads:/app/backend/uploads  # Persiste uploads
+    environment:
+      - DB_HOST=db  # Nome do serviço DB
+      - DB_PORT=5432
+      - DB_NAME=masa_portal
+      - DB_USER=postgres
+      - DB_PASSWORD=admin  # Mude em prod
+      - JWT_SECRET=masa_portal_super_secret_key_2024
+      - JWT_EXPIRES_IN=8h
+      - UPLOAD_DIR=./uploads
+    depends_on:
+      - db
+
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_DB: masa_portal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data  # Persiste DB
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql   # ← Essa linha!
+
+volumes:
+  pgdata:
