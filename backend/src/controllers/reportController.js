@@ -69,15 +69,22 @@ exports.getPublicReports = async (req, res) => {
 
 // --- ADMIN ---
 exports.getAllAdmin = async (req, res) => {
-  // Somente últimos 7 dias, ordenado por data desc
+  // Lista todos os relatórios, ordenado por data desc
   const { status, protocol } = req.query;
   let query = `SELECT id, protocol, type, relation, area, category, subject,
                is_identified, status, created_at, updated_at
-               FROM reports
-               WHERE created_at >= NOW() - INTERVAL '7 days'`;
+               FROM reports`;
   const params = [];
-  if (status) { params.push(status); query += ` AND status = $${params.length}`; }
-  if (protocol) { params.push(`%${protocol}%`); query += ` AND protocol ILIKE $${params.length}`; }
+  let whereAdded = false;
+  if (status) { 
+    params.push(status); 
+    query += ` WHERE status = $${params.length}`; 
+    whereAdded = true;
+  }
+  if (protocol) { 
+    params.push(`%${protocol}%`); 
+    query += `${whereAdded ? ' AND' : ' WHERE'} protocol ILIKE $${params.length}`; 
+  }
   query += ' ORDER BY created_at DESC';
   const { rows } = await pool.query(query, params);
   res.json(rows);
